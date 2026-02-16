@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Tai Xiu Gaming Interface - Main Screen</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f20d0d",
+                        "gold": "#D4AF37",
+                        "background-light": "#f8f5f5",
+                        "background-dark": "#0a0a0a",
+                        "panel-dark": "#221010",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .bet-glow-red:hover {
+            box-shadow: 0 0 20px rgba(242, 13, 13, 0.4);
+        }
+
+        .bet-glow-gold:hover {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .glass-panel {
+            background: rgba(34, 16, 16, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .glass-panel {
+            background: rgba(34, 16, 16, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        /* 3D Dice Styles */
+        .scene {
+            width: 48px;
+            height: 48px;
+            perspective: 200px;
+        }
+
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            /* No transition here, we handle rotation explicitly or via classes */
+        }
+
+        .cube__face {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .cube__face--1 {
+            transform: rotateY(0deg) translateZ(24px);
+        }
+
+        .cube__face--2 {
+            transform: rotateY(180deg) translateZ(24px);
+        }
+
+        .cube__face--3 {
+            transform: rotateY(90deg) translateZ(24px);
+        }
+
+        .cube__face--4 {
+            transform: rotateY(-90deg) translateZ(24px);
+        }
+
+        .cube__face--5 {
+            transform: rotateX(90deg) translateZ(24px);
+        }
+
+        .cube__face--6 {
+            transform: rotateX(-90deg) translateZ(24px);
+        }
+
+        /* Rotate cube to show specific face */
+        .show-1 {
+            transform: translateZ(-24px) rotateY(0deg);
+        }
+
+        .show-2 {
+            transform: translateZ(-24px) rotateY(-180deg);
+        }
+
+        .show-3 {
+            transform: translateZ(-24px) rotateY(-90deg);
+        }
+
+        .show-4 {
+            transform: translateZ(-24px) rotateY(90deg);
+        }
+
+        .show-5 {
+            transform: translateZ(-24px) rotateX(-90deg);
+        }
+
+        .show-6 {
+            transform: translateZ(-24px) rotateX(90deg);
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-white min-h-screen overflow-hidden">
+    <div class="relative flex h-screen w-full flex-col">
+        <!-- Header / Top Bar -->
+        <header
+            class="flex items-center justify-between border-b border-white/10 bg-black/40 px-10 py-3 backdrop-blur-md z-50">
+            <div class="flex items-center gap-4 text-white">
+                <div class="size-8 text-primary">
+                    <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path clip-rule="evenodd"
+                            d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z"
+                            fill="currentColor" fill-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-white text-lg font-bold leading-tight tracking-tight">LUXE CASINO</h2>
+                    <span class="text-[10px] text-primary font-bold tracking-[0.2em] uppercase">Tai Xiu Premium</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex flex-col items-end">
+                    <p class="text-white/60 text-xs font-medium">Session ID</p>
+                    <p class="text-gold text-sm font-bold">#882-934-001</p>
+                </div>
+                <div class="h-8 w-[1px] bg-white/10"></div>
+                <div class="flex flex-col items-end">
+                    <p class="text-white/60 text-xs font-medium">Total Balance</p>
+                    <p class="text-white text-lg font-bold leading-none">$124,500.00</p>
+                </div>
+                <button
+                    class="flex items-center justify-center rounded-full h-10 px-6 bg-primary hover:bg-primary/80 transition-colors text-white text-sm font-bold">
+                    DEPOSIT
+                </button>
+                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-gold/50"
+                    data-alt="User avatar with luxury gold border"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAm_O_ZX77ipt8scwhYa3QreQdkGRkDgLwJ9h0qPEpNZ8WubJoQ2FDcXX35_jopzUtW7GYeqv984T_BZaVljcKdVBqcfbX8ce3AIxPaU8S9dckSnBwZeZLQuKKFB6aXQsj0DzAwTBRzKdW3FL02NxN5nLVWceAYHg_zg8EugZTXHgONx77u3m8mA0YlQq0Y5MvZuKGuFUhDJNNDtdrin6owIvBOZ3mmU3mPXAIJcuTnbeP-dr0Y69wqDoHUlE-aihPnB5fAQj9LIkU");'>
+                </div>
+            </div>
+        </header>
+        <main class="flex flex-1 relative overflow-hidden">
+            <!-- Left Sidebar: History/Roadmap -->
+            <aside class="w-24 border-r border-white/5 bg-black/30 flex flex-col items-center py-6 gap-4 z-40">
+                <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest vertical-text mb-2">History</p>
+                <div class="flex flex-col gap-3">
+                    <!-- Xiu (Small) Results -->
+                    <div
+                        class="size-10 rounded-full border-2 border-white/20 bg-black flex items-center justify-center text-[10px] font-bold text-white">
+                        X</div>
+                    <div
+                        class="size-10 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-white shadow-[0_0_10px_rgba(242,13,13,0.5)]">
+                        T</div>
+                    <div
+                        class="size-10 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-white">
+                        T</div>
+                    <div
+                        class="size-10 rounded-full border-2 border-white/20 bg-black flex items-center justify-center text-[10px] font-bold text-white">
+                        X</div>
+                    <div
+                        class="size-10 rounded-full border-2 border-white/20 bg-black flex items-center justify-center text-[10px] font-bold text-white">
+                        X</div>
+                    <div
+                        class="size-10 rounded-full border-2 border-white/20 bg-black flex items-center justify-center text-[10px] font-bold text-white">
+                        X</div>
+                    <div
+                        class="size-10 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-white">
+                        T</div>
+                    <div
+                        class="size-10 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-white">
+                        T</div>
+                    <div
+                        class="size-10 rounded-full border-2 border-white/20 bg-black flex items-center justify-center text-[10px] font-bold text-white">
+                        X</div>
+                </div>
+                <button class="mt-auto text-white/40 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">analytics</span>
+                </button>
+            </aside>
+            <!-- Main Game Area -->
+            <section class="flex-1 flex flex-col relative">
+                <!-- Center Stage (Dice & Bowl) -->
+                <div class="flex-1 flex items-center justify-center relative">
+                    <!-- Ambient Lighting for the Table -->
+                    <div
+                        class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent">
+                    </div>
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="relative group">
+                            <!-- Golden Plate -->
+                            <div
+                                class="size-80 rounded-full bg-gradient-to-tr from-[#8a6d3b] via-[#f9e98e] to-[#8a6d3b] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex items-center justify-center p-4">
+                                <!-- Inner Plate -->
+                                <div
+                                    class="size-full rounded-full bg-neutral-900 shadow-inner flex items-center justify-center relative">
+                                    <!-- Dice Shadow/Positioning -->
+                                    <div id="dice-container" class="absolute flex gap-2">
+                                        <div
+                                            class="size-12 bg-white rounded-lg shadow-xl transform rotate-12 flex items-center justify-center">
+                                            <div class="grid grid-cols-2 gap-1 p-2">
+                                                <div class="size-2 bg-black rounded-full"></div>
+                                                <div class="size-2 bg-black rounded-full"></div>
+                                                <div class="size-2 bg-black rounded-full"></div>
+                                                <div class="size-2 bg-black rounded-full"></div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="size-12 bg-white rounded-lg shadow-xl transform -rotate-6 flex items-center justify-center">
+                                            <div class="size-3 bg-primary rounded-full"></div>
+                                        </div>
+                                        <div
+                                            class="size-12 bg-white rounded-lg shadow-xl transform rotate-45 flex items-center justify-center">
+                                            <div class="flex flex-col gap-1">
+                                                <div class="size-2 bg-black rounded-full"></div>
+                                                <div class="size-2 bg-black rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- The Golden Bowl (Semi-Transparent State or Closed State) -->
+                                    <div id="open-bowl-btn"
+                                        class="absolute inset-0 rounded-full bg-gradient-to-b from-gold/40 to-black/80 backdrop-blur-[2px] border-4 border-gold/20 flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95 shadow-2xl z-50">
+                                        <div class="text-center">
+                                            <span
+                                                class="material-symbols-outlined text-6xl text-gold/80 mb-2">casino</span>
+                                            <p class="font-bold tracking-widest text-gold text-lg drop-shadow-md">MỞ BÁT
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Reflection/Glow -->
+                            <div class="absolute -inset-10 bg-primary/5 blur-[80px] -z-10 rounded-full"></div>
+                        </div>
+                        <!-- Timer Overlay below the bowl -->
+                        <div class="mt-8 flex flex-col items-center">
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        class="w-16 h-16 glass-panel border border-primary/30 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(242,13,13,0.3)]">
+                                        <span class="text-3xl font-bold text-primary tracking-tighter">00</span>
+                                    </div>
+                                    <span class="text-[10px] mt-1 text-white/50 font-bold uppercase">Min</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        class="w-16 h-16 glass-panel border border-primary/30 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(242,13,13,0.3)]">
+                                        <span class="text-3xl font-bold text-primary tracking-tighter">24</span>
+                                    </div>
+                                    <span class="text-[10px] mt-1 text-white/50 font-bold uppercase">Sec</span>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-xs font-bold text-white/60 tracking-[0.3em] uppercase">Betting Phase</p>
+                        </div>
+                    </div>
+                    <!-- Betting Zones -->
+                    <div class="absolute inset-x-12 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
+                        <!-- XIU (Small) Zone -->
+                        <div
+                            class="pointer-events-auto w-72 h-80 glass-panel border border-white/10 rounded-2xl p-6 flex flex-col items-center justify-between group cursor-pointer transition-all hover:border-white/30 bet-glow-gold">
+                            <div class="text-center">
+                                <h3
+                                    class="text-4xl font-black text-white/20 group-hover:text-white/60 transition-colors uppercase tracking-widest">
+                                    XIU</h3>
+                                <p class="text-gold font-bold text-sm tracking-widest">SMALL (4-10)</p>
+                            </div>
+                            <div class="w-full space-y-2">
+                                <div class="flex justify-between text-[10px] font-bold text-white/40 uppercase">
+                                    <span>Total Players</span>
+                                    <span>Total Bet</span>
+                                </div>
+                                <div class="flex justify-between items-end">
+                                    <span class="text-lg font-bold text-white/80">1,248</span>
+                                    <span class="text-2xl font-black text-gold">$42,800</span>
+                                </div>
+                            </div>
+                            <div
+                                class="w-full bg-white/5 h-12 rounded-xl border border-white/5 flex items-center justify-center">
+                                <span class="text-white/30 font-bold text-xs uppercase tracking-tighter italic">Your
+                                    Bet: $0</span>
+                            </div>
+                        </div>
+                        <!-- TAI (Big) Zone -->
+                        <div
+                            class="pointer-events-auto w-72 h-80 glass-panel border border-primary/20 rounded-2xl p-6 flex flex-col items-center justify-between group cursor-pointer transition-all hover:border-primary/50 bet-glow-red">
+                            <div class="text-center">
+                                <h3
+                                    class="text-4xl font-black text-primary/30 group-hover:text-primary transition-colors uppercase tracking-widest">
+                                    TAI</h3>
+                                <p class="text-primary font-bold text-sm tracking-widest">BIG (11-17)</p>
+                            </div>
+                            <div class="w-full space-y-2">
+                                <div class="flex justify-between text-[10px] font-bold text-white/40 uppercase">
+                                    <span>Total Players</span>
+                                    <span>Total Bet</span>
+                                </div>
+                                <div class="flex justify-between items-end">
+                                    <span class="text-lg font-bold text-white/80">982</span>
+                                    <span class="text-2xl font-black text-primary">$38,150</span>
+                                </div>
+                            </div>
+                            <div
+                                class="w-full bg-primary/10 h-12 rounded-xl border border-primary/20 flex items-center justify-center">
+                                <span class="text-primary font-bold text-xs uppercase tracking-tighter italic">Your Bet:
+                                    $1,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer Controls (Chips & Actions) -->
+                <div class="h-32 glass-panel border-t border-white/10 px-10 flex items-center justify-between z-40">
+                    <div class="flex items-center gap-4">
+                        <button
+                            class="flex flex-col items-center justify-center size-14 rounded-xl glass-panel border border-white/10 hover:bg-white/5 text-white/60">
+                            <span class="material-symbols-outlined">restart_alt</span>
+                            <span class="text-[8px] font-bold uppercase mt-1">Rebet</span>
+                        </button>
+                        <button
+                            class="flex flex-col items-center justify-center size-14 rounded-xl glass-panel border border-white/10 hover:bg-white/5 text-white/60">
+                            <span class="material-symbols-outlined">double_arrow</span>
+                            <span class="text-[8px] font-bold uppercase mt-1">Double</span>
+                        </button>
+                        <button id="shake-btn"
+                            class="flex flex-col items-center justify-center size-14 rounded-xl glass-panel border border-primary/50 bg-primary/20 hover:bg-primary/40 text-white transition-all shadow-[0_0_10px_rgba(242,13,13,0.3)]">
+                            <span class="material-symbols-outlined">vibration</span>
+                            <span class="text-[8px] font-bold uppercase mt-1">Xóc</span>
+                        </button>
+                    </div>
+                    <!-- Chip Selector -->
+                    <div class="flex items-center gap-6">
+                        <!-- Chip 1K -->
+                        <div class="flex flex-col items-center gap-1 group cursor-pointer">
+                            <div
+                                class="size-16 rounded-full border-4 border-dashed border-white/30 flex items-center justify-center bg-zinc-800 transition-transform group-hover:scale-110 group-active:scale-95 shadow-lg">
+                                <div
+                                    class="size-12 rounded-full border-2 border-white/10 flex items-center justify-center text-xs font-black">
+                                    1K</div>
+                            </div>
+                        </div>
+                        <!-- Chip 10K -->
+                        <div class="flex flex-col items-center gap-1 group cursor-pointer">
+                            <div
+                                class="size-16 rounded-full border-4 border-dashed border-blue-500/50 flex items-center justify-center bg-blue-900 transition-transform group-hover:scale-110 group-active:scale-95 shadow-lg">
+                                <div
+                                    class="size-12 rounded-full border-2 border-blue-400/30 flex items-center justify-center text-xs font-black">
+                                    10K</div>
+                            </div>
+                        </div>
+                        <!-- Chip 100K (Selected) -->
+                        <div class="flex flex-col items-center gap-1 group cursor-pointer">
+                            <div
+                                class="size-20 rounded-full border-4 border-dashed border-primary flex items-center justify-center bg-primary/20 transition-transform scale-110 shadow-[0_0_20px_rgba(242,13,13,0.4)]">
+                                <div
+                                    class="size-16 rounded-full border-2 border-primary/50 flex items-center justify-center text-lg font-black text-white">
+                                    100K</div>
+                            </div>
+                        </div>
+                        <!-- Chip 1M -->
+                        <div class="flex flex-col items-center gap-1 group cursor-pointer">
+                            <div
+                                class="size-16 rounded-full border-4 border-dashed border-gold/50 flex items-center justify-center bg-gold/20 transition-transform group-hover:scale-110 group-active:scale-95 shadow-lg">
+                                <div
+                                    class="size-12 rounded-full border-2 border-gold/30 flex items-center justify-center text-xs font-black text-gold">
+                                    1M</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right mr-4">
+                            <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Current Stake</p>
+                            <p class="text-xl font-black text-white">$1,000.00</p>
+                        </div>
+                        <button
+                            class="bg-primary text-white h-16 px-10 rounded-xl font-black tracking-widest text-lg hover:brightness-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(242,13,13,0.3)]">
+                            CONFIRM BET
+                        </button>
+                    </div>
+                </div>
+            </section>
+            <!-- Right Sidebar: Live Chat / Players -->
+            <aside class="w-80 border-l border-white/5 bg-black/30 flex flex-col z-40">
+                <div class="p-4 border-b border-white/5 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="size-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-xs font-bold text-white/60 tracking-widest uppercase">Live Chat</span>
+                    </div>
+                    <span class="text-[10px] bg-white/5 px-2 py-1 rounded text-white/40">2,491 Online</span>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- Message 1 -->
+                    <div class="flex gap-3">
+                        <div class="size-8 rounded-full bg-blue-500/20 shrink-0"></div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-white/40">VegasKing99</span>
+                            <p class="text-xs text-white/80 leading-relaxed bg-white/5 p-2 rounded-lg rounded-tl-none">
+                                Tai is on a streak! $500 on Tai again.</p>
+                        </div>
+                    </div>
+                    <!-- Message 2 -->
+                    <div class="flex gap-3">
+                        <div class="size-8 rounded-full bg-gold/20 shrink-0"></div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-gold">VIP_ProPlayer</span>
+                            <p
+                                class="text-xs text-white/80 leading-relaxed bg-primary/10 p-2 rounded-lg rounded-tl-none border border-primary/20">
+                                Let's go 100M! 🔥🔥🔥</p>
+                        </div>
+                    </div>
+                    <!-- Message 3 -->
+                    <div class="flex gap-3">
+                        <div class="size-8 rounded-full bg-purple-500/20 shrink-0"></div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-white/40">DragonSlayer</span>
+                            <p class="text-xs text-white/80 leading-relaxed bg-white/5 p-2 rounded-lg rounded-tl-none">
+                                Looking for that triple six.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 bg-black/40 border-t border-white/5">
+                    <div class="relative">
+                        <input
+                            class="w-full bg-white/5 border-white/10 rounded-full py-2 pl-4 pr-10 text-xs focus:ring-primary focus:border-primary"
+                            placeholder="Say something..." type="text" />
+                        <button class="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
+                            <span class="material-symbols-outlined text-lg">send</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+        <!-- Game HUD Bottom Overlay -->
+        <div class="absolute bottom-36 left-1/2 -translate-x-1/2 pointer-events-none flex gap-20">
+            <div class="text-center opacity-50">
+                <p class="text-[8px] font-bold uppercase tracking-[0.4em] text-white/40">Probability</p>
+                <p class="text-xs font-bold text-gold">48.2% Xiu</p>
+            </div>
+            <div class="text-center opacity-50">
+                <p class="text-[8px] font-bold uppercase tracking-[0.4em] text-white/40">Probability</p>
+                <p class="text-xs font-bold text-primary">51.8% Tai</p>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>
