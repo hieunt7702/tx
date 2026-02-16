@@ -9,7 +9,6 @@ const App: React.FC = () => {
   const [bowlTransform, setBowlTransform] = useState({ x: 0, y: 0, scale: 1, rotate: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [showResultText, setShowResultText] = useState(false);
   const [lastResults, setLastResults] = useState<number[][]>([]);
   const [bowlClickCount, setBowlClickCount] = useState(0);
   const [diceOffsets, setDiceOffsets] = useState<{ x: number, y: number }[]>([
@@ -26,7 +25,6 @@ const App: React.FC = () => {
     let newResults: number[] = [];
     let sum = 0;
 
-    // Logic: 0 clicks = Random, Odd clicks = Xỉu (< 11), Even clicks (>=2) = Tài (>= 11)
     const isControlled = bowlClickCount > 0;
     const targetIsBig = bowlClickCount % 2 === 0;
 
@@ -38,7 +36,7 @@ const App: React.FC = () => {
       ];
       sum = newResults.reduce((a, b) => a + b, 0);
 
-      if (!isControlled) break; // Fully random if no clicks
+      if (!isControlled) break;
     } while ((targetIsBig && sum < 11) || (!targetIsBig && sum >= 11));
 
     const newRotations = [
@@ -56,15 +54,17 @@ const App: React.FC = () => {
     setDiceResults(newResults);
     setDiceRotations(newRotations);
     setDiceOffsets(newOffsets);
-    setBowlClickCount(0); // Reset for next round
+    setBowlClickCount(0);
   };
 
+  const [hasShaken, setHasShaken] = useState(false);
+
   const handleShake = () => {
-    if (isShaking) return;
+    if (isShaking || (hasShaken && !isOpen)) return;
 
     if (isOpen) {
       setIsOpen(false);
-      setShowResultText(false);
+      setHasShaken(false);
       setBowlTransform({ x: 0, y: 0, scale: 1, rotate: 0 });
       setTimeout(performShake, 300);
     } else {
@@ -75,13 +75,14 @@ const App: React.FC = () => {
   const performShake = () => {
     setIsShaking(true);
     let startTime = Date.now();
-    const duration = 1000;
+    const duration = 1200;
 
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       if (elapsed > duration) {
         clearInterval(interval);
         setIsShaking(false);
+        setHasShaken(true);
         setBowlTransform({ x: 0, y: 0, scale: 1, rotate: 0 });
         randomizeDice();
         return;
@@ -89,7 +90,7 @@ const App: React.FC = () => {
 
       const dx = (Math.random() - 0.5) * 60;
       const dy = (Math.random() - 0.5) * 60;
-      const dr = Math.random() * 16 - 8;
+      const dr = Math.random() * 20 - 10;
       setBowlTransform({ x: dx, y: dy, scale: 1.05, rotate: dr });
     }, 30);
   };
@@ -97,15 +98,15 @@ const App: React.FC = () => {
   const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
     if (isOpen || isShaking) return;
     setIsDragging(true);
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
     setDragStart({ x: clientX, y: clientY });
   };
 
   const onDrag = (e: MouseEvent | TouchEvent) => {
     if (!isDragging) return;
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
 
     const deltaX = clientX - dragStart.x;
     const deltaY = clientY - dragStart.y;
@@ -125,9 +126,9 @@ const App: React.FC = () => {
 
     if (distance > DRAG_THRESHOLD) {
       setIsOpen(true);
+      setHasShaken(false);
       setBowlTransform({ x: deltaX * 3, y: deltaY * 3, scale: 1.5, rotate: deltaX * 0.2 });
       setLastResults(prev => [[...diceResults], ...prev.slice(0, 9)]);
-      setTimeout(() => setShowResultText(true), 300);
     } else {
       setBowlTransform({ x: 0, y: 0, scale: 1, rotate: 0 });
     }
@@ -153,20 +154,19 @@ const App: React.FC = () => {
     };
   }, [isDragging, dragStart, diceResults]);
 
-  const total = diceResults.reduce((a, b) => a + b, 0);
-  const resultType = total >= 11 ? 'TÀI' : 'XỈU';
+  const isButtonDisabled = isShaking || (hasShaken && !isOpen);
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-between bg-black font-display text-white overflow-hidden select-none relative p-2 md:p-6">
+    <div className="flex h-screen w-full flex-col items-center justify-between bg-black font-display text-white overflow-hidden select-none relative p-2 md:p-6 landscape:flex-row landscape:justify-center landscape:p-4">
 
       {/* Background Decor */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-[-20%] left-[-20%] size-[60%] transition-colors duration-1000 blur-[150px] rounded-full ${isShaking ? 'bg-primary/10' : 'bg-primary/5'}`}></div>
-        <div className={`absolute bottom-[-20%] right-[-20%] size-[60%] transition-colors duration-1000 blur-[150px] rounded-full ${isShaking ? 'bg-amber-500/10' : 'bg-amber-500/5'}`}></div>
+        <div className={`absolute top-[-20%] left-[-20%] size-[60%] transition-colors duration-1000 blur-[200px] rounded-full ${isShaking ? 'bg-primary/20' : 'bg-primary/5'}`}></div>
+        <div className={`absolute bottom-[-20%] right-[-20%] size-[60%] transition-colors duration-1000 blur-[200px] rounded-full ${isShaking ? 'bg-amber-500/20' : 'bg-amber-500/5'}`}></div>
       </div>
 
-      {/* History Bar - Scaled for mobile */}
-      <div className="relative mt-2 md:mt-4 flex flex-wrap justify-center gap-1.5 md:gap-2 z-20 w-full max-w-[95vw]">
+      {/* History Bar */}
+      <div className="relative mt-2 md:mt-4 flex flex-wrap justify-center gap-1.5 md:gap-2 z-20 w-full max-w-[95vw] landscape:absolute landscape:top-6 landscape:left-1/2 landscape:-translate-x-1/2 landscape:mt-0">
         {lastResults.map((res, i) => {
           const sum = res.reduce((a, b) => a + b, 0);
           const isTai = sum >= 11;
@@ -186,98 +186,71 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      {/* Plate Area */}
-      <div className="relative flex-1 flex flex-col items-center justify-center w-full max-w-2xl px-4 min-h-0">
-
-        {/* Result Announcement - Centered and Styled with Inter */}
-        <div className={`absolute left-0 right-0 top-0 md:top-[-80px] flex flex-col items-center justify-center transition-all duration-1000 z-[100] pointer-events-none ${showResultText ? 'opacity-100 scale-100 translate-y-[-20px] md:translate-y-0' : 'opacity-0 scale-90 translate-y-10'}`}>
-          <div className="flex items-center justify-center gap-6 mb-[-15px] w-full">
-            <div className="h-[2px] flex-1 max-w-[80px] md:max-w-[120px] bg-gradient-to-r from-transparent to-primary/60"></div>
-            <span className="text-9xl md:text-[12rem] font-[900] text-white drop-shadow-[0_0_80px_rgba(225,29,72,0.8)] tracking-tighter leading-none select-none">
-              {total}
-            </span>
-            <div className="h-[2px] flex-1 max-w-[80px] md:max-w-[120px] bg-gradient-to-l from-transparent to-primary/60"></div>
-          </div>
-
-          <div className="relative flex flex-col items-center mt-2">
-            <span className={`text-2xl md:text-4xl font-black tracking-[1.8em] uppercase transition-all duration-700 mr-[-1.8em] ${resultType === 'TÀI' ? 'text-primary drop-shadow-[0_0_30px_rgba(225,29,72,0.6)]' : 'text-zinc-500'}`}>
-              {resultType}
-            </span>
-            <div className={`mt-4 w-32 md:w-48 h-[3px] rounded-full bg-gradient-to-r from-transparent via-current to-transparent opacity-30 ${resultType === 'TÀI' ? 'text-primary' : 'text-zinc-500'}`}></div>
-          </div>
-        </div>
+      {/* Main Game Area */}
+      <div className="relative flex-1 flex flex-col items-center justify-center w-full max-w-5xl px-4 min-h-0 landscape:flex-row landscape:gap-16">
 
         {/* Plate System */}
-        <div className="relative group cursor-grab active:cursor-grabbing scale-[0.75] sm:scale-90 md:scale-110 transition-transform duration-500 z-10">
-
-          {/* Ambient Lighting Rings */}
-          <div className={`absolute inset-[-120px] bg-primary/5 blur-[120px] rounded-full transition-opacity duration-1000 pointer-events-none ${isShaking ? 'opacity-100 animate-pulse' : 'opacity-20'}`}></div>
-
-          {/* The Plate (Đĩa) - High-end Ceramic feel */}
-          <div className="size-[320px] md:size-[420px] rounded-full bg-gradient-to-br from-zinc-800 via-zinc-950 to-black border-2 border-white/5 shadow-[0_60px_100px_-20px_rgba(0,0,0,1),inset_0_0_40px_rgba(255,255,255,0.02)] flex items-center justify-center p-10 md:p-14 relative overflow-visible">
-
-            {/* Inner Plate Recess */}
-            <div className="size-full rounded-full bg-zinc-950/90 shadow-[inset_0_15px_60px_rgba(0,0,0,0.9)] border border-white/5 flex items-center justify-center relative overflow-hidden backdrop-blur-md">
-
-              {/* Floor Pattern */}
-              <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] [background-size:32px_32px]"></div>
-
-              {/* Dice Container - Natural Scattered Positioning */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none drop-shadow-[0_25px_25px_rgba(0,0,0,0.8)]">
+        <div className="relative group cursor-grab active:cursor-grabbing scale-95 md:scale-110 landscape:scale-[0.85] transition-transform duration-700 z-10">
+          <div className={`absolute inset-[-150px] bg-primary/10 blur-[150px] rounded-full transition-opacity duration-1000 pointer-events-none ${isShaking ? 'opacity-100 animate-pulse' : 'opacity-20'}`}></div>
+          <div className="size-[340px] md:size-[440px] rounded-full bg-gradient-to-br from-zinc-800 via-zinc-950 to-black border-2 border-white/10 shadow-[0_80px_120px_-30px_rgba(0,0,0,1),inset_0_0_60px_rgba(255,255,255,0.02)] flex items-center justify-center p-10 relative overflow-visible">
+            <div className="size-full rounded-full bg-zinc-950/90 shadow-[inset_0_20px_80px_rgba(0,0,0,0.9)] border border-white/5 flex items-center justify-center relative overflow-hidden backdrop-blur-md">
+              <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] [background-size:40px_40px]"></div>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none drop-shadow-[0_30px_35px_rgba(0,0,0,0.85)]">
                 {diceResults.map((num, i) => (
-                  <div
-                    key={i}
-                    className="absolute animate-in zoom-in-75 duration-700"
-                    style={{
-                      animationDelay: `${i * 150}ms`,
-                      transform: `translate(${diceOffsets[i].x}px, ${diceOffsets[i].y}px)`
-                    }}
-                  >
+                  <div key={i} className="absolute animate-in zoom-in-75 duration-700" style={{ animationDelay: `${i * 150}ms`, transform: `translate(${diceOffsets[i].x}px, ${diceOffsets[i].y}px)` }}>
                     <Dice number={num} rotation={diceRotations[i]} />
                   </div>
                 ))}
               </div>
-
-              {/* The Bowl - Semi-transparent Development Mode */}
               <div
                 onMouseDown={startDrag}
                 onTouchStart={startDrag}
                 onClick={() => !isShaking && !isOpen && setBowlClickCount(prev => prev + 1)}
                 style={{
                   transform: `translate(${bowlTransform.x}px, ${bowlTransform.y}px) scale(${bowlTransform.scale}) rotate(${bowlTransform.rotate}deg)`,
-                  transition: isDragging || isShaking ? 'none' : 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease'
+                  transition: isDragging || isShaking ? 'none' : 'transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease'
                 }}
-                className={`absolute inset-0 rounded-full bg-zinc-900/60 backdrop-blur-[1px] border-[5px] border-white/10 flex items-center justify-center select-none z-50 shadow-[0_40px_80px_rgba(0,0,0,0.9)] transition-all duration-500 overflow-hidden ring-1 ring-white/5 cursor-pointer active:scale-[0.97] ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-zinc-800/60'}`}
+                className={`absolute inset-0 rounded-full bg-zinc-900/40 backdrop-blur-[2px] border-[6px] border-white/10 flex items-center justify-center select-none z-50 shadow-[0_50px_100px_rgba(0,0,0,0.95)] transition-all duration-500 overflow-hidden ring-1 ring-white/10 cursor-pointer active:scale-[0.98] ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-zinc-800/50'}`}
               >
-                <div className="flex flex-col items-center gap-5 relative z-10 opacity-20 group-hover:opacity-40 transition-opacity duration-500">
+                <div className="flex flex-col items-center gap-6 relative z-10 opacity-30 group-hover:opacity-50 transition-opacity duration-500">
                   <span className="material-symbols-outlined text-6xl md:text-8xl text-white">fingerprint</span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Simplified Action Footer */}
-      <div className="w-full h-40 md:h-56 flex flex-col items-center justify-center z-10">
-        <button
-          onClick={handleShake}
-          disabled={isShaking}
-          className={`relative group px-20 py-6 md:px-28 md:py-8 rounded-full overflow-hidden transition-all duration-500 active:scale-95 shadow-2xl ${isShaking ? 'cursor-not-allowed grayscale-[0.5]' : 'hover:scale-105 shadow-primary/20'}`}
-        >
-          <div className="absolute inset-0 bg-primary/95 group-hover:bg-primary transition-colors duration-300"></div>
+        {/* Action Controls */}
+        <div className="w-full max-w-xs px-4 z-20 mt-10 landscape:mt-0 landscape:flex-1 landscape:max-w-none landscape:max-w-[300px]">
+          <button
+            onClick={handleShake}
+            disabled={isButtonDisabled}
+            className={`w-full group relative overflow-hidden h-[75px] md:h-[95px] rounded-2xl md:rounded-[2.5rem] font-[900] text-3xl md:text-5xl tracking-[0.25em] uppercase transition-all duration-500 flex items-center justify-center
+              ${isButtonDisabled
+                ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed scale-[0.98]'
+                : 'bg-gradient-to-br from-rose-600 via-rose-700 to-rose-900 text-white shadow-[0_0_50px_-10px_rgba(225,29,72,0.5),inset_0_4px_16px_rgba(255,255,255,0.25)] hover:shadow-[0_0_70px_-10px_rgba(225,29,72,0.7)] active:translate-y-1 active:shadow-none landscape:hover:scale-105'}`}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/40 pointer-events-none"></div>
+            <div className="relative z-10 flex items-center justify-center gap-6">
+              <span className={`material-symbols-outlined text-4xl md:text-5xl drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] ${isShaking ? 'animate-spin' : 'group-hover:rotate-12 transition-transform duration-500'}`}>
+                {isShaking ? 'cached' : 'casino'}
+              </span>
+              <span className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+                {isShaking ? '...' : hasShaken && !isOpen ? 'Kéo' : 'Xóc'}
+              </span>
+            </div>
+            {!isButtonDisabled && (
+              <div className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-45 -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none"></div>
+            )}
+            <style>{`
+              @keyframes shimmer {
+                0% { transform: translateX(-200%) skewX(-45deg); }
+                100% { transform: translateX(200%) skewX(-45deg); }
+              }
+            `}</style>
+          </button>
+        </div>
 
-          <div className="relative flex items-center gap-4">
-            <span className={`material-symbols-outlined text-white text-2xl font-black transition-all duration-700 ${isShaking ? 'animate-spin' : 'group-hover:rotate-180 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]'}`}>
-              {isShaking ? 'progress_activity' : 'casino'}
-            </span>
-            <span className="text-white font-black uppercase text-sm md:text-lg">
-              {isShaking ? 'Đang xóc...' : 'Xóc Đĩa'}
-            </span>
-          </div>
-          <div className="absolute inset-x-0 top-0 h-[1px] bg-white/30"></div>
-        </button>
       </div>
     </div>
   );
