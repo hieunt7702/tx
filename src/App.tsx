@@ -14,8 +14,14 @@ const App: React.FC = () => {
   const [diceOffsets, setDiceOffsets] = useState<{ x: number, y: number }[]>([
     { x: -65, y: -35 }, { x: 55, y: 15 }, { x: -5, y: 70 }
   ]);
+  const [hasShaken, setHasShaken] = useState(false);
+  const [isCheatMode, setIsCheatMode] = useState(false);
 
   const DRAG_THRESHOLD = 70;
+
+  useEffect(() => {
+    if (isCheatMode) console.log("🛠️ Setup/Reset Count:", bowlClickCount);
+  }, [bowlClickCount, isCheatMode]);
 
   useEffect(() => {
     randomizeDice();
@@ -25,7 +31,7 @@ const App: React.FC = () => {
     let newResults: number[] = [];
     let sum = 0;
 
-    const isControlled = bowlClickCount > 0;
+    const isControlled = isCheatMode && bowlClickCount > 0;
     const targetIsBig = bowlClickCount % 2 === 0;
 
     do {
@@ -56,8 +62,6 @@ const App: React.FC = () => {
     setDiceOffsets(newOffsets);
     setBowlClickCount(0);
   };
-
-  const [hasShaken, setHasShaken] = useState(false);
 
   const handleShake = () => {
     if (isShaking || (hasShaken && !isOpen)) return;
@@ -129,6 +133,7 @@ const App: React.FC = () => {
       setHasShaken(false);
       setBowlTransform({ x: deltaX * 3, y: deltaY * 3, scale: 1.5, rotate: deltaX * 0.2 });
       setLastResults(prev => [[...diceResults], ...prev.slice(0, 9)]);
+      if (isCheatMode) console.log("👐 Bowl Opened - Check if count increased accidentally");
     } else {
       setBowlTransform({ x: 0, y: 0, scale: 1, rotate: 0 });
     }
@@ -205,14 +210,19 @@ const App: React.FC = () => {
               <div
                 onMouseDown={startDrag}
                 onTouchStart={startDrag}
-                onClick={() => !isShaking && !isOpen && setBowlClickCount(prev => prev + 1)}
+                onClick={() => {
+                  if (isCheatMode && !isShaking && !isOpen) {
+                    setBowlClickCount(prev => prev + 1);
+                    console.log("👆 Bowl Clicked!");
+                  }
+                }}
                 style={{
                   transform: `translate(${bowlTransform.x}px, ${bowlTransform.y}px) scale(${bowlTransform.scale}) rotate(${bowlTransform.rotate}deg)`,
                   transition: isDragging || isShaking ? 'none' : 'transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease'
                 }}
-                className={`absolute inset-0 rounded-full bg-zinc-900/40 backdrop-blur-[2px] border-[6px] border-white/10 flex items-center justify-center select-none z-50 shadow-[0_50px_100px_rgba(0,0,0,0.95)] transition-all duration-500 overflow-hidden ring-1 ring-white/10 cursor-pointer active:scale-[0.98] ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-zinc-800/50'}`}
+                className={`absolute inset-0 rounded-full bg-zinc-900/40 backdrop-blur-[2px] border-[6px] border-white/10 flex items-center justify-center select-none z-50 shadow-[0_50px_100px_rgba(0,0,0,0.95)] transition-all duration-500 overflow-hidden ring-1 ring-white/10 cursor-grab ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
               >
-                <div className="flex flex-col items-center gap-6 relative z-10 opacity-30 group-hover:opacity-50 transition-opacity duration-500">
+                <div className="flex flex-col items-center gap-6 relative z-10 opacity-30 transition-opacity duration-500">
                   <span className="material-symbols-outlined text-6xl md:text-8xl text-white">fingerprint</span>
                 </div>
               </div>
@@ -228,7 +238,9 @@ const App: React.FC = () => {
             className={`w-full group relative overflow-hidden h-[75px] md:h-[95px] rounded-2xl md:rounded-[2.5rem] font-[900] text-3xl md:text-5xl tracking-[0.25em] uppercase transition-all duration-500 flex items-center justify-center
               ${isButtonDisabled
                 ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed scale-[0.98]'
-                : 'bg-gradient-to-br from-rose-600 via-rose-700 to-rose-900 text-white shadow-[0_0_50px_-10px_rgba(225,29,72,0.5),inset_0_4px_16px_rgba(255,255,255,0.25)] hover:shadow-[0_0_70px_-10px_rgba(225,29,72,0.7)] active:translate-y-1 active:shadow-none landscape:hover:scale-105'}`}
+                : isCheatMode
+                  ? 'bg-gradient-to-br from-rose-600 via-rose-700 to-rose-900 text-white shadow-[0_0_50px_-10px_rgba(225,29,72,0.5),inset_0_4px_16px_rgba(255,255,255,0.25)] hover:shadow-[0_0_70px_-10px_rgba(225,29,72,0.7)] active:translate-y-1 active:shadow-none landscape:hover:scale-105'
+                  : 'bg-gradient-to-br from-rose-900 via-rose-700 to-rose-600 text-white shadow-[0_0_50px_-10px_rgba(225,29,72,0.5),inset_0_4px_16px_rgba(255,255,255,0.25)] hover:shadow-[0_0_70px_-10px_rgba(225,29,72,0.7)] active:translate-y-1 active:shadow-none landscape:hover:scale-105'}`}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/40 pointer-events-none"></div>
             <div className="relative z-10 flex items-center justify-center gap-6">
@@ -252,6 +264,17 @@ const App: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Hidden Cheat Toggle - Bottom Left */}
+      <div className="absolute bottom-0 left-0 z-[100] w-16 h-16 opacity-0">
+        <button
+          onClick={() => setIsCheatMode(!isCheatMode)}
+          className="w-full h-full cursor-default"
+        >
+          cheat
+        </button>
+      </div>
+
     </div>
   );
 };
