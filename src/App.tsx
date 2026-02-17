@@ -15,7 +15,7 @@ const App: React.FC = () => {
     { x: -65, y: -35 }, { x: 55, y: 15 }, { x: -5, y: 70 }
   ]);
   const [hasShaken, setHasShaken] = useState(false);
-  const [isCheatMode, setIsCheatMode] = useState(false);
+  const [isCheatMode, setIsCheatMode] = useState(true);
 
   const DRAG_THRESHOLD = 70;
 
@@ -220,7 +220,7 @@ const App: React.FC = () => {
                   transform: `translate(${bowlTransform.x}px, ${bowlTransform.y}px) scale(${bowlTransform.scale}) rotate(${bowlTransform.rotate}deg)`,
                   transition: isDragging || isShaking ? 'none' : 'transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease'
                 }}
-                className={`absolute inset-0 rounded-full bg-zinc-900/40 backdrop-blur-[2px] border-[6px] border-white/10 flex items-center justify-center select-none z-50 shadow-[0_50px_100px_rgba(0,0,0,0.95)] transition-all duration-500 overflow-hidden ring-1 ring-white/10 cursor-grab ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                className={`absolute inset-0 rounded-full bg-zinc-950 border-[6px] border-zinc-800 flex items-center justify-center select-none z-50 shadow-[0_50px_100px_rgba(0,0,0,0.95)] transition-all duration-500 overflow-hidden ring-1 ring-white/10 cursor-grab ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
               >
                 <div className="flex flex-col items-center gap-6 relative z-10 opacity-30 transition-opacity duration-500">
                   <span className="material-symbols-outlined text-6xl md:text-8xl text-white">fingerprint</span>
