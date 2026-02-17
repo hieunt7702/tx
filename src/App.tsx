@@ -31,7 +31,7 @@ const App: React.FC = () => {
     let newResults: number[] = [];
     let sum = 0;
 
-    const isControlled = isCheatMode && bowlClickCount > 0;
+    const isControlled = isCheatMode;
     const targetIsBig = bowlClickCount % 2 === 0;
 
     do {
